@@ -14,7 +14,10 @@ app.group('/api/v1',(router) => {
     router.post('/transactions',Controllers.transactions)
     router.get('/listmenu',Controllers.listmenu)
     router.post('/order',Controllers.orders)
-    router.patch('/status/:id',Controllers.ChangeStatus)
+    router.patch('/status',Controllers.ChangeStatus)
+    router.post('/test',Controllers.test)
+    router.get('/myOrder',Controllers.myOrder)
+    router.patch('/complete_transaction',Controllers.complete_transaction)
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))

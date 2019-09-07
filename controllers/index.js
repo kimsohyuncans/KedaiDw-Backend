@@ -1,5 +1,5 @@
 const transactions = require('../models').transactions
-const listmenu = require('../models').menus
+const menus = require('../models').menus
 const categories = require('../models').categories
 const orders = require('../models').orders
 
@@ -29,7 +29,7 @@ exports.listmenu = (req,res) => {
             'name'
         ],
         include : [{
-            model : listmenu,
+            model : menus,
             as : 'menus'
         }]
     })
@@ -40,30 +40,101 @@ exports.listmenu = (req,res) => {
     })
 }
 
-exports.orders = (req,res) => {
-    orders.create({
-        menu_id : req.body.menu_id,
-        transaction_id : req.body.transaction_id,
-        qyt : req.body.qyt,
-        price : req.body.price,
-        status : req.body.status
-    }).then(r => {
-        res.send(r)
+exports.orders = async (req,res) => {
+    id = req.body[0].transaction_id
+    await orders.bulkCreate(req.body,{returning: true})
+    const myorder = await orders.findAll({
+        attributes : [
+            'qyt',
+            'price',
+            'status'
+        ],
+        where : { transaction_id : id},
+        include : [{
+            model : menus,
+            as : "menus_info",
+            attributes : [
+                'name',
+            ]
+        }]
     })
+    .then(r => res.send(r)).catch(r => res.send(r))
+    
+    res.send(myorder)
 }
 
 // change status orders
-exports.ChangeStatus = (req,res) => {
-    orders.update(
+exports.ChangeStatus = async(req,res) => {
+    await orders.update(
         {
             status : req.body.status
         },
         {
-            where : { id : req.params.id}
-        }
-    ).then(() =>{
-        orders.findAll({
             where : { transaction_id : req.body.transaction_id}
-        }).then(r => res.send(r)).catch(r => res.send(r))
-    }).catch(r => res.send(r))
+        }
+    )
+    
+    r = await orders.findAll({
+        attributes : [
+            'qyt',
+            'price',
+            'status'
+        ],
+        where : { transaction_id : req.body.transaction_id},
+        include : [{
+            model : menus,
+            as : "menus_info",
+            attributes : [
+                'name',
+            ]
+        }]
+    })
+
+    try {
+        res.send(r)
+    } catch (error) {
+        res.send(error)
+    }
+
+    
+    
+    
+
+    
 }
+
+exports.myOrder = (req,res) => {
+    orders.findAll({
+        attributes : [
+            'status'
+        ],
+        where : { transaction_id : 5},
+        include : [{
+            model : menus,
+            as : "menus_info",
+            attributes : [
+                'name',
+                'price'
+            ]
+        }]
+    }).then(r => res.send(r)).catch(r => res.send(r))
+}
+
+exports.complete_transaction = async(req,res) => {
+    result = await transactions.update(req.body,{
+        where : { id : req.body.id}
+    })
+    try {
+        res.send({
+            status : 'ok',
+            output : result
+        })
+    } catch (error) {
+        res.send(error)
+    }
+}
+
+exports.test = (req,res) => {
+    res.send(req.body)
+}
+

@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
       as : 'menus',
       foreignKey: "category_id"
     })
+
+    menus.hasOne(models.orders,{
+      as : 'menus_info',
+      foreignKey : 'menu_id'
+    })
   };
   return menus;
 };

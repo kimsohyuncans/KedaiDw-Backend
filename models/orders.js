@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
       as : 'transactionID',
       foreignKey: "transaction_id"
     })
+
+    orders.belongsTo(models.menus,{
+      as : 'menus_info',
+      foreignKey : 'menu_id'
+    })
   };
   return orders;
 };
